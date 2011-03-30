@@ -92,7 +92,9 @@ public class Main extends PApplet {
           if (values[x] > tallestRect)
               tallestRect = values[x];
       }
-
+      //Temp vairable to hold the current index our mouse is on
+      //Default to -1 as we will never have that many rectangles :-D
+      int mouseIndex = -1;
       //Begin drawing rectangles
       for (int x = 0; x < valuesCount; x++)
       {
@@ -130,14 +132,9 @@ public class Main extends PApplet {
                 Float.parseFloat(args[2])-10);
 
         //This checks to see if our mouseX and mouseY locations are bound
-        //inside of the current rectangle. If it is then it draws the exact
-        //data that it knows for that rectangle. Doing it here makes sence
-        //because this is the rect we also happen to be drawing. However if you
-        //get close to the right side of the rect then the next rectangle will
-        //be drawn over your text, To fix we could just do another loop
-        //outside of this one through the data again in order to
-        //draw the text after it has drawn the
-        //rectangles and put it ontop. However that just will waste more cycles
+        //inside of the current rectangle using 2 if statements. If it
+        //is then saves the index so when we do our highlighting function
+        //next we wont have to re-loop through every element
 
         if ((mouseX < (5*(x+1) + (rectWidth*x)) + rectWidth)
                 && (mouseX > (5*(x+1) + (rectWidth*x))))
@@ -147,9 +144,64 @@ public class Main extends PApplet {
                     Float.parseFloat(args[2])-rectStartingPointHeight)
                     && (mouseY > rectStartingPointHeight))
             {
-                text(values[x], mouseX, mouseY-15);
+                //store this rect index for highlighting
+                mouseIndex = x;
+                
             }
         }
+      }
+
+       //This draws a black box over our entire screen
+          //the box has a 128 alpha (close to half)so that it looks like
+          //the rectangles are dim.
+          fill(0,0,0,128);
+          noStroke();
+          rect (0,0,Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+          stroke(0);
+
+      //our loop found an actual rectangle to highlight and put data in
+      if (mouseIndex != -1)
+      {
+         
+          
+          //We re-draw the rectangle of index where our mouse is.
+          //This will give us a nice highlight effect because this rectangle
+          //will not have that alpha 50%
+          
+          
+          //set the color of the rectangle to our random color generated in
+          //the setup at our mouse index
+        fill(colors[mouseIndex].getRed(), colors[mouseIndex].getGreen(), colors[mouseIndex].getBlue());
+        //Grab our current rectangle ratio compared to max
+        float ratio = values[mouseIndex]/tallestRect;
+
+        //Our starting point is our total height - (the total height - 20) * our
+        //ratio based on our tallest rect in order to get the starting draw
+        //point for our rectangle
+        float rectStartingPointHeight = Float.parseFloat(args[2]) - 
+                ((Float.parseFloat(args[2])-20) * ratio);
+
+        //draw our rectangle, this looks at what value count we are at
+        //then multiplies the number of rects before it and the number of 5 pixel
+        //blank spaces required adds them together and says thats our starting point.
+        //then uses our rectWidth and our screen height - rectStartingPointHeight
+        //to tell the rect how far down it has to go to reach the botom of the screen
+        rect((5*(mouseIndex+1) + (rectWidth*mouseIndex)), rectStartingPointHeight,
+                rectWidth, Float.parseFloat(args[2])-rectStartingPointHeight);
+
+        //Reset the color to white as its easily readable on most colors
+        fill(255, 255, 255, 255);
+
+        //set text alignment to center
+        textAlign(CENTER);
+
+        //draw the label at the middle of the rectangle of the mouseIndex rectangle
+        //The formula takes the blank space up to this point and the number of rectWidths
+        //to this point and then adds my current width/2 because that is the
+        //middle of my current rect, then draws it 10 pixels above the bottom of the page.
+        text(labels[mouseIndex], (5*(mouseIndex+1) + (rectWidth*mouseIndex))+((rectWidth/2)),
+                Float.parseFloat(args[2])-10);
+        text(values[mouseIndex], mouseX, mouseY-15);
       }
     }
 
